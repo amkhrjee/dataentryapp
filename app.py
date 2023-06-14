@@ -65,6 +65,31 @@ class DataRecordForm(tk.Frame):
     The input form
     """
 
+    def __init__(self, parent, *args, **kwargs):
+        super.__init__(self, parent, *args, **kwargs)
+        self.inputs = {}
+
+        # Section 1
+        recordInfo = tk.LabelFrame(self, "Record Information")
+
+        # Line 1
+        self.inputs["Date"] = LabelInput(
+            recordInfo, "Date", input_var=tk.StringVar())
+        self.inputs["Date"].grid(row=0, column=0)
+
+        self.inputs["Time"] = LabelInput(recordInfo, "Time", input_var=tk.StringVar(
+        ), input_args={"values": ["8:00", "12:00", "16:00", "20:00"]})
+        self.inputs["Time"].grid(row=0, column=1)
+
+        self.inputs["Technician"] = LabelInput(
+            recordInfo, "Technician", input_var=tk.StringVar())
+        self.inputs["Technician"].grid(row=0, column=2)
+
+        # Line 2
+        self.inputs['Lab'] = LabelInput(recordInfo, "Lab", input_class=ttk.Combobox, input_var=tk.StringVar(
+        ), input_args={"values": ["A", "B", "C", "D", "E"]})
+        self.inputs['Lab'].grid(row=1, column=0)
+
 
 if __name__ == "__main__":
     app = Application()
