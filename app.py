@@ -11,20 +11,24 @@ class Application(tk.Tk):
     """
 
     def __init__(self, *args, **kwargs):
+        self.title_font = ("Inter", 20, "bold")
+        self.sub_title_font = ("Inter", 10, "italic")
         super().__init__(*args, **kwargs)
         self.title("Data Entry Application")
         self.resizable(width=False, height=False)
         ttk.Label(self, text="Data Entry Application",
-                  font=("TkDefaultFont", 16)).grid(row=0)
+                  font=self.title_font).grid(row=0)
+        ttk.Label(self, text="Made by amkhrjee 2023",
+                  font=self.sub_title_font).grid(row=1)
         self.recordform = DataRecordForm(self)
-        self.recordform.grid(row=1, padx=10)
+        self.recordform.grid(row=2, padx=10)
         self.savebutton = ttk.Button(self, text="Save", command=self.on_save)
-        self.savebutton.grid(sticky=tk.E, row=2, padx=10)
+        self.savebutton.grid(sticky=tk.E, row=3, padx=10)
 
         # status bar
         self.status = tk.StringVar()
         self.statusbar = ttk.Label(self, textvariable=self.status)
-        self.statusbar.grid(sticky=(tk.W + tk.E), row=3, padx=10)
+        self.statusbar.grid(sticky=(tk.W + tk.E), row=4, padx=10)
         self.records_saved = 0
 
     def on_save(self):
@@ -51,16 +55,19 @@ class LabelInput(tk.Frame):
     """
 
     def __init__(self, parent, label="", input_class=ttk.Entry, input_var=None, input_args=None, label_args=None, **kwargs):
-        super().__init__(parent, **kwargs)
+        super().__init__(parent, padx=10,  **kwargs)
         input_args = input_args or {}
         label_args = label_args or {}
         self.variable = input_var
+        self.custom_font = ("Inter", 10, "bold")
 
         if input_class in (ttk.Checkbutton, ttk.Button, ttk.Radiobutton):
             input_args["text"] = label
+            input_args["font"] = self.custom_font
             input_args["variable"] = input_var
         else:
-            self.label = ttk.Label(self, text=label, **label_args)
+            self.label = ttk.Label(
+                self, text=label, font=self.custom_font, **label_args)
             self.label.grid(row=0, column=0, sticky=(tk.W + tk.E))
             input_args["textvariable"] = input_var
 
@@ -107,9 +114,15 @@ class DataRecordForm(tk.Frame):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self.fontandpadding = {
+            "font": ("Inter", 16, "bold"),
+            "padx": 10,
+            "pady": 20
+        }
         self.inputs = {}
         # Section 1
-        recordInfo = tk.LabelFrame(self, text="Record Information")
+        recordInfo = tk.LabelFrame(
+            self, text="Record Information", **self.fontandpadding)
 
         # Line 1
         self.inputs["Date"] = LabelInput(
@@ -143,7 +156,8 @@ class DataRecordForm(tk.Frame):
         recordInfo.grid(row=0, column=0, sticky=tk.W + tk.E)
 
         # Section 2
-        environmentinfo = tk.LabelFrame(self, text="Environment Data")
+        environmentinfo = tk.LabelFrame(
+            self, text="Environment Data", **self.fontandpadding)
 
         self.inputs['Humidity'] = LabelInput(environmentinfo, "Humidity (g/m³)", input_class=tk.Spinbox,
                                              input_var=tk.DoubleVar(), input_args={"from_": 0.5, "to": 52.0, "increment": .01})
@@ -175,7 +189,8 @@ class DataRecordForm(tk.Frame):
         environmentinfo.grid(row=1, column=0, sticky=(tk.W + tk.E))
 
         # Section 3
-        plantinfo = tk.LabelFrame(self, text="Plant Data")
+        plantinfo = tk.LabelFrame(
+            self, text="Plant Data", **self.fontandpadding)
 
         self.inputs['Plants'] = LabelInput(
             plantinfo, "Plants", input_class=tk.Spinbox, input_var=tk.IntVar(), input_args={"from_": 0, "to": 20})
