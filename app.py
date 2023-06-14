@@ -3,6 +3,10 @@ from tkinter import ttk
 from datetime import datetime
 import os
 import csv
+import ctypes
+
+myappid = 'amkhrjee.dataentryapp.csvfiles.0.0.1'  # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 class Application(tk.Tk):
