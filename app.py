@@ -1,3 +1,4 @@
+# build command: pyinstaller -w --icon=Keyboard.ico -n "Data Entry" --add-data="Keyboard.ico;." app.py
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
@@ -8,6 +9,8 @@ import ctypes
 myappid = 'amkhrjee.dataentryapp.csvfiles.0.0.1'  # arbitrary string
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
+basedir = os.path.dirname(__file__)
+
 
 class Application(tk.Tk):
     """
@@ -16,12 +19,12 @@ class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        inter_path = "./fonts/Inter-VariableFont_slnt,wght.ttf"
+        # inter_path = "./fonts/Inter-VariableFont_slnt,wght.ttf"
         # self.call("font", "create", "custom", "-family",
         #           "Inter", inter_path)
         self.title_font = ("Inter", 20, "bold")
         self.sub_title_font = ("Inter", 10, "italic")
-        self.iconbitmap("./icons/Keyboard.ico")
+        self.iconbitmap(os.path.join(basedir, "Keyboard.ico"))
         self.title("Data Entry Application")
         self.resizable(width=False, height=False)
         ttk.Label(self, text="Data Entry Application",
