@@ -1,11 +1,48 @@
 import tkinter as tk
 from tkinter import ttk
+from datetime import datetime
+import os
+import csv
 
 
 class Application(tk.Tk):
     """
     Application Root Window
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title("Data Entry Application")
+        self.resizable(width=False, height=False)
+        ttk.Label(self, text="Data Entry Application",
+                  font=("TkDefaultFont", 16)).grid(row=0)
+        self.recordform = DataRecordForm(self)
+        self.recordform.grid(row=1, padx=10)
+        self.savebutton = ttk.Button(self, text="Save", command=self.on_save)
+        self.savebutton.grid(sticky=tk.E, row=2, padx=10)
+
+        # status bar
+        self.status = tk.StringVar()
+        self.statusbar = ttk.Label(self, textvariable=self.status)
+        self.statusbar.grid(sticky=(tk.W + tk.E), row=3, padx=10)
+        self.records_saved = 0
+
+    def on_save(self):
+        datestring = datetime.today().strftime("%Y-%m-%d")
+        filename = "data_record_{}.csv".format(datestring)
+        newfile = not os.path.exists(filename)
+        data = self.recordform.get()
+
+        with open(filename, 'a') as fh:
+            csvwriter = csv.DictWriter(fh, fieldnames=data.keys())
+            if newfile:
+                csvwriter.writeheader()
+            csvwriter.writerow(data)
+
+        self.records_saved += 1
+        self.status.set(
+            "{} records saved this session".format(self.records_saved))
+        self.recordform.reset()
 
 
 class LabelInput(tk.Frame):
@@ -14,16 +51,19 @@ class LabelInput(tk.Frame):
     """
 
     def __init__(self, parent, label="", input_class=ttk.Entry, input_var=None, input_args=None, label_args=None, **kwargs):
-        super.__init__(parent, **kwargs)
+        super().__init__(parent, **kwargs)
         input_args = input_args or {}
         label_args = label_args or {}
+        self.variable = input_var
+
         if input_class in (ttk.Checkbutton, ttk.Button, ttk.Radiobutton):
             input_args["text"] = label
             input_args["variable"] = input_var
         else:
             self.label = ttk.Label(self, text=label, **label_args)
             self.label.grid(row=0, column=0, sticky=(tk.W + tk.E))
-            input_args["textVariable"] = input_var
+            input_args["textvariable"] = input_var
+
         self.input = input_class(self, **input_args)
         self.input.grid(row=1, column=0, sticky=(tk.W + tk.E))
         self.columnconfigure(0, weight=1)
@@ -66,19 +106,22 @@ class DataRecordForm(tk.Frame):
     """
 
     def __init__(self, parent, *args, **kwargs):
-        super.__init__(self, parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self.inputs = {}
-
         # Section 1
-        recordInfo = tk.LabelFrame(self, "Record Information")
+        recordInfo = tk.LabelFrame(self, text="Record Information")
 
         # Line 1
         self.inputs["Date"] = LabelInput(
             recordInfo, "Date", input_var=tk.StringVar())
         self.inputs["Date"].grid(row=0, column=0)
 
-        self.inputs["Time"] = LabelInput(recordInfo, "Time", input_var=tk.StringVar(
-        ), input_args={"values": ["8:00", "12:00", "16:00", "20:00"]})
+        self.inputs['Time'] = LabelInput(
+            recordInfo, "Time",
+            input_class=ttk.Combobox,
+            input_var=tk.StringVar(),
+            input_args={"values": ["8:00", "12:00", "16:00", "20:00"]}
+        )
         self.inputs["Time"].grid(row=0, column=1)
 
         self.inputs["Technician"] = LabelInput(
@@ -89,6 +132,77 @@ class DataRecordForm(tk.Frame):
         self.inputs['Lab'] = LabelInput(recordInfo, "Lab", input_class=ttk.Combobox, input_var=tk.StringVar(
         ), input_args={"values": ["A", "B", "C", "D", "E"]})
         self.inputs['Lab'].grid(row=1, column=0)
+
+        self.inputs['Plot'] = LabelInput(recordInfo, "Plot", input_class=ttk.Combobox, input_var=tk.IntVar(),
+                                         input_args={"values": list(range(1, 21))})
+        self.inputs['Plot'].grid(row=1, column=1)
+
+        self.inputs['Seed sample'] = LabelInput(
+            recordInfo, "Seed sample", input_var=tk.StringVar())
+        self.inputs['Seed sample'].grid(row=1, column=2)
+        recordInfo.grid(row=0, column=0, sticky=tk.W + tk.E)
+
+        # Section 2
+        environmentinfo = tk.LabelFrame(self, text="Environment Data")
+
+        self.inputs['Humidity'] = LabelInput(environmentinfo, "Humidity (g/m³)", input_class=tk.Spinbox,
+                                             input_var=tk.DoubleVar(), input_args={"from_": 0.5, "to": 52.0, "increment": .01})
+        self.inputs['Humidity'].grid(row=0, column=0)
+        self.inputs['Humidity'].grid(row=0, column=0)
+        self.inputs['Light'] = LabelInput(
+            environmentinfo, "Light (klx)",
+            input_class=tk.Spinbox,
+            input_var=tk.DoubleVar(),
+            input_args={"from_": 0, "to": 100, "increment": .01}
+        )
+        self.inputs['Light'].grid(row=0, column=1)
+        self.inputs['Temperature'] = LabelInput(
+            environmentinfo, "Tenmperature (°C)",
+            input_class=tk.Spinbox,
+            input_var=tk.DoubleVar(),
+            input_args={"from_": 4, "to": 40, "increment": .01}
+        )
+        self.inputs['Temperature'].grid(row=0, column=2)
+        self.inputs['Equipment Fault'] = LabelInput(
+            environmentinfo, "Equipment Fault",
+            input_class=ttk.Checkbutton,
+            input_var=tk.BooleanVar()
+        )
+        self.inputs['Equipment Fault'] = LabelInput(
+            environmentinfo, "Equipment Fault", input_class=ttk.Checkbutton, input_var=tk.BooleanVar())
+        self.inputs['Equipment Fault'].grid(row=1, column=0, columnspan=3)
+
+        environmentinfo.grid(row=1, column=0, sticky=(tk.W + tk.E))
+
+        # Section 3
+        plantinfo = tk.LabelFrame(self, text="Plant Data")
+
+        self.inputs['Plants'] = LabelInput(
+            plantinfo, "Plants", input_class=tk.Spinbox, input_var=tk.IntVar(), input_args={"from_": 0, "to": 20})
+        self.inputs['Plants'].grid(row=0, column=0)
+
+        self.inputs['Blossoms'] = LabelInput(
+            plantinfo, "Blossoms", input_class=tk.Spinbox, input_var=tk.IntVar(), input_args={"from_": 0, "to": 1000})
+        self.inputs['Blossoms'].grid(row=0, column=1)
+
+        plantinfo.grid(row=2, column=0, sticky=(tk.W + tk.E))
+
+        # Section 4
+        self.inputs['Notes'] = LabelInput(
+            self, "Notes", input_class=tk.Text, input_args={"width": 75, "height": 10})
+        self.inputs['Notes'].grid(sticky="w", row=3, column=0)
+
+        self.reset()
+
+    def get(self):
+        data = {}
+        for key, widget in self.inputs.items():
+            data[key] = widget.get()
+        return data
+
+    def reset(self):
+        for widget in self.inputs.values():
+            widget.set("")
 
 
 if __name__ == "__main__":
