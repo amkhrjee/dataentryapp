@@ -11,9 +11,13 @@ class Application(tk.Tk):
     """
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        inter_path = "./fonts/Inter-VariableFont_slnt,wght.ttf"
+        # self.call("font", "create", "custom", "-family",
+        #           "Inter", inter_path)
         self.title_font = ("Inter", 20, "bold")
         self.sub_title_font = ("Inter", 10, "italic")
-        super().__init__(*args, **kwargs)
+        self.iconbitmap("./icons/Keyboard.ico")
         self.title("Data Entry Application")
         self.resizable(width=False, height=False)
         ttk.Label(self, text="Data Entry Application",
@@ -63,7 +67,7 @@ class LabelInput(tk.Frame):
 
         if input_class in (ttk.Checkbutton, ttk.Button, ttk.Radiobutton):
             input_args["text"] = label
-            input_args["font"] = self.custom_font
+            # input_args["font"] = self.custom_font
             input_args["variable"] = input_var
         else:
             self.label = ttk.Label(
